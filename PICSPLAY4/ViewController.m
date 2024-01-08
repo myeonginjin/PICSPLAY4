@@ -14,6 +14,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 
+
     imageView = [[UIImageView alloc] initWithFrame:CGRectMake(37.5, 200, 300, 300)];
     applyGrayScaleBtn = [[UIButton alloc] initWithFrame:CGRectMake(47.5, 530, 100, 60)];
     saveImageBtn = [[UIButton alloc] initWithFrame:CGRectMake(227.5, 530, 100, 60)];
@@ -77,6 +78,9 @@
 - (void)saveImageBtnTapped {
 
     NSLog(@"?????");
+
+
+    // Do any additional setup after loading the view..
 
 }
 
