@@ -8,7 +8,14 @@
 #import <UIKit/UIKit.h>
 
 @interface ViewController : UIViewController
-
+{
+    
+    UIImageView *imageView;
+    UIImage *image;
+    UIButton *applyGrayScaleBtn;
+    UIButton *saveImageBtn;
+    
+}
 
 @end
 
