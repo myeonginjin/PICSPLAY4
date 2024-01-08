@@ -12,8 +12,13 @@
     
     UIImageView *imageView;
     UIImage *image;
+    UIImage *appliedGrayScaleImage;
     UIButton *applyGrayScaleBtn;
     UIButton *saveImageBtn;
+
+    
+    BOOL isOriginalImage;
+    BOOL readyToShow;
     
 }
 
