@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		1B82068C2B4B97CC00D7C07D /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B82068B2B4B97CC00D7C07D /* AppDelegate.m */; };
 		1B82068F2B4B97CC00D7C07D /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B82068E2B4B97CC00D7C07D /* SceneDelegate.m */; };
-		1B8206922B4B97CC00D7C07D /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B8206912B4B97CC00D7C07D /* ViewController.m */; };
+		1B8206922B4B97CC00D7C07D /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B8206912B4B97CC00D7C07D /* ViewController.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		1B8206952B4B97CC00D7C07D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1B8206932B4B97CC00D7C07D /* Main.storyboard */; };
 		1B8206982B4B97CC00D7C07D /* PICSPLAY4.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 1B8206962B4B97CC00D7C07D /* PICSPLAY4.xcdatamodeld */; };
 		1B82069A2B4B97CD00D7C07D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1B8206992B4B97CD00D7C07D /* Assets.xcassets */; };
@@ -300,6 +300,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_OBJC_ARC = NO;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = JJ2D372S4X;
@@ -328,6 +329,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_OBJC_ARC = NO;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = JJ2D372S4X;
