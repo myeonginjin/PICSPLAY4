@@ -15,10 +15,12 @@
     UIImage *appliedGrayScaleImage;
     UIButton *applyGrayScaleBtn;
     UIButton *saveImageBtn;
-
+    UIImage *imageToSave;
     
-    BOOL isOriginalImage;
-    BOOL readyToShow;
+    
+    
+    BOOL appiedGrayScale
+//    BOOL
     
 }
 

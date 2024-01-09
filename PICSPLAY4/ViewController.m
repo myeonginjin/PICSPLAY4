@@ -6,6 +6,7 @@
 //
 
 #import "ViewController.h"
+#import <Photos/Photos.h>
 
 struct RGBAPixel {
     UInt8 red;
@@ -20,18 +21,25 @@ struct RGBAPixel {
     [super viewDidLoad];
 
     imageView = [[UIImageView alloc] initWithFrame:CGRectMake(37.5, 200, 300, 300)];
-    applyGrayScaleBtn = [[UIButton alloc] initWithFrame:CGRectMake(47.5, 530, 100, 60)];
-    saveImageBtn = [[UIButton alloc] initWithFrame:CGRectMake(227.5, 530, 100, 60)];
-
     image = [UIImage imageNamed:@"input.jpg"];
 
+    [imageView setImage:image];
+
+    [self.view addSubview:imageView];
+    [imageView release];
+    
+    applyGrayScaleBtn = [[UIButton alloc] initWithFrame:CGRectMake(47.5, 530, 100, 60)];
     applyGrayScaleBtn.layer.cornerRadius = 10.0;
     applyGrayScaleBtn.layer.borderWidth = 1.0;
     applyGrayScaleBtn.layer.borderColor = [UIColor blackColor].CGColor;
     [applyGrayScaleBtn setBackgroundColor:[UIColor whiteColor]];
     [applyGrayScaleBtn setTitle:@"Apply" forState:UIControlStateNormal];
     [applyGrayScaleBtn setTitleColor:[UIColor grayColor] forState:UIControlStateNormal];
+    [applyGrayScaleBtn addTarget:self action:@selector(applyGrayBtnTapped) forControlEvents:UIControlEventTouchUpInside];
 
+    [self.view addSubview:applyGrayScaleBtn];
+    
+    saveImageBtn = [[UIButton alloc] initWithFrame:CGRectMake(227.5, 530, 100, 60)];
     saveImageBtn.layer.cornerRadius = 10.0;
     saveImageBtn.layer.borderWidth = 1.0;
     saveImageBtn.layer.borderColor = [UIColor blackColor].CGColor;
@@ -39,19 +47,18 @@ struct RGBAPixel {
     [saveImageBtn setTitle:@"Download" forState:UIControlStateNormal];
     [saveImageBtn setTitleColor:[UIColor grayColor] forState:UIControlStateNormal];
 
-    [imageView setImage:image];
-
-    [self.view addSubview:imageView];
-    [self.view addSubview:applyGrayScaleBtn];
     [self.view addSubview:saveImageBtn];
 
-    [applyGrayScaleBtn addTarget:self action:@selector(applyGrayBtnTapped) forControlEvents:UIControlEventTouchUpInside];
+    
     [saveImageBtn addTarget:self action:@selector(saveImageBtnTapped) forControlEvents:UIControlEventTouchUpInside];
 }
 
 - (void)dealloc {
-    [imageView removeFromSuperview];
-    [imageView release];
+    if (imageView != nil) {
+        [imageView removeFromSuperview];
+        imageView = nil;
+    }
+    
     [applyGrayScaleBtn removeFromSuperview];
     [applyGrayScaleBtn release];
     [saveImageBtn removeFromSuperview];
@@ -70,8 +77,61 @@ struct RGBAPixel {
 
 - (void)saveImageBtnTapped {
     NSLog(@"Download button tapped");
-    // Implement your download logic here
+    
+    // 이미지 저장
+    [self saveImageToLibrary];
 }
+
+- (void)saveImageToLibrary {
+    if (imageView.image == nil) {
+        NSLog(@"No image to save.");
+        return;
+    }
+    NSLog(@"!!!!!@@!!!!!@@@11111111\n");
+    
+    UIImage *imageToSave = imageView.image;
+    
+    NSLog(@"!!!!!@@!!!!!@@@1.5\n");
+    // 권한 확인
+    
+    PHAuthorizationStatus status = [PHPhotoLibrary authorizationStatus];
+    if (status == PHAuthorizationStatusAuthorized) {
+        [self saveImage:imageToSave];
+    } else if (status == PHAuthorizationStatusDenied || status == PHAuthorizationStatusRestricted) {
+        NSLog(@"Access to photo library denied or restricted.");
+    } else if (status == PHAuthorizationStatusNotDetermined) {
+        // 사용자에게 권한 요청
+        [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus authStatus) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (authStatus == PHAuthorizationStatusAuthorized) {
+                    [self saveImage:imageToSave];
+                } else {
+                    NSLog(@"Access to photo library denied.");
+                }
+            });
+        }];
+    }
+}
+
+- (void)saveImage:(UIImage *)imageToSave {
+    // 이미지 저장
+    NSLog(@"!!!!!@@!!!!!@@@2222222\n");
+    
+    [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
+        PHAssetChangeRequest *changeRequest = [PHAssetChangeRequest creationRequestForAssetFromImage:imageToSave];
+        changeRequest.creationDate = [NSDate date];
+    } completionHandler:^(BOOL success, NSError *error) {
+        if (success) {
+            NSLog(@"Image saved to photo library.");
+        } else {
+            NSLog(@"Error saving image: %@", error.localizedDescription);
+        }
+    }];
+}
+
+
+
+
 
 - (void)manipulateImagePixelData:(CGImageRef)inImage {
     // Create the bitmap context
@@ -127,7 +187,8 @@ struct RGBAPixel {
     bitmapByteCount = (unsigned int)(bitmapBytesPerRow * pixelsHigh);
 
     // Use the generic RGB color space.
-    colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
+//    colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
+    colorSpace = CGColorSpaceCreateDeviceRGB();
     if (colorSpace == NULL) {
         fprintf(stderr, "Error allocating color space\n");
         return NULL;
@@ -147,7 +208,7 @@ struct RGBAPixel {
     // (CMYK, Grayscale, and so on) it will be converted over to the format
     // specified here by CGBitmapContextCreate.
     context = CGBitmapContextCreate(bitmapData, pixelsWide, pixelsHigh, 8, // bits per component
-                                    bitmapBytesPerRow, colorSpace, kCGImageAlphaPremultipliedFirst);
+                                    bitmapBytesPerRow, colorSpace, kCGImageAlphaNoneSkipLast);
     if (context == NULL) {
         free(bitmapData);
         fprintf(stderr, "Context not created!");
@@ -168,17 +229,56 @@ struct RGBAPixel {
     NSUInteger bytesPerRow = bytesPerPixel * width;
     CGColorSpaceRef colorspace = CGColorSpaceCreateDeviceRGB();
     uint8_t *rawdata = (uint8_t *)malloc(width * height * sizeof(struct RGBAPixel));
+    float ratioR, ratioG, ratioB;
+    
+    ratioR = 0.0132075;
+    
+    ratioB =  0.12396694;
+    ratioG = 1 - (ratioR + ratioB);
 
     for (NSUInteger i = 0; i < width * height; i++) {
-//        UInt8 gray = (UInt8)((pData[i * bytesPerPixel] + pData[i * bytesPerPixel + 1] + pData[i * bytesPerPixel + 2]) / 3);
-        UInt8 gray = (UInt8)((0.299 * pData[i * bytesPerPixel] + 0.587 * pData[i * bytesPerPixel + 1] + 0.114 * pData[i * bytesPerPixel + 2]) * pData[i * bytesPerPixel + 3] / 255);
+        
+/* 방법 1
+        UInt8 maxValue = (UInt8) (MAX(pData[i * bytesPerPixel], pData[i * bytesPerPixel + 1]));
+        
+        maxValue = (UInt8) (MAX(maxValue, pData[i * bytesPerPixel + 2]));
+        
+        UInt8 minValue = (UInt8) (MIN(pData[i * bytesPerPixel], pData[i * bytesPerPixel + 1]));
+        
+        minValue = (UInt8) (MIN(minValue, pData[i * bytesPerPixel + 2]));
+        
+        UInt8 gray = (UInt8)((maxValue + minValue) / 2 );
+*/
+        
+/* 방법 2
+        UInt8 gray = (UInt8)( (pData[i * bytesPerPixel] + pData[i * bytesPerPixel + 1] + pData[i * bytesPerPixel + 2])/3  );
+ */
+        
+        
+/* 방법 3 */
+//        UInt8 gray = (UInt8)((0.2126 * pData[i * bytesPerPixel] + 0.7152 * pData[i * bytesPerPixel + 1] + 0.0722 * pData[i * bytesPerPixel + 2]) );
+
+        
+/* 방법 4
+        UInt8 gray = (UInt8)((0.299 * pData[i * bytesPerPixel] + 0.587 * pData[i * bytesPerPixel + 1] + 0.114 * pData[i * bytesPerPixel + 2]) );
+ 
+ */ 
+        
+/*방법 5
+        UInt8 gray = (UInt8)((0.3 * pData[i * bytesPerPixel] + 0.59 * pData[i * bytesPerPixel + 1] + 0.11 * pData[i * bytesPerPixel + 2]) );
+ */
+
+    
+        UInt8 gray = (UInt8)((ratioR * pData[i * bytesPerPixel] + ratioG * pData[i * bytesPerPixel + 1] + ratioB * pData[i * bytesPerPixel + 2]) );
+
+        
         rawdata[i * 4] = gray;
         rawdata[i * 4 + 1] = gray;
         rawdata[i * 4 + 2] = gray;
         rawdata[i * 4 + 3] = 255;
     }
 
-    CGContextRef context = CGBitmapContextCreate(rawdata, width, height, bitsPerComponent, bytesPerRow, colorspace, kCGImageAlphaPremultipliedLast);
+    CGContextRef context = CGBitmapContextCreate(rawdata, width, height, bitsPerComponent, bytesPerRow, colorspace, kCGImageAlphaNoneSkipLast);
     CGImageRef cgImage = CGBitmapContextCreateImage(context);
     UIImage *grayScaleImage = [UIImage imageWithCGImage:cgImage];
 
