@@ -18,9 +18,8 @@
     UIImage *imageToSave;
     
     
-    
-    BOOL appiedGrayScale
-//    BOOL
+    BOOL isOriginalImage;
+    BOOL readyToShow;
     
 }
 
